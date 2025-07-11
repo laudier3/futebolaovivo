@@ -1,0 +1,6 @@
+| Número do Cartão    | Tipo | Resultado esperado               |
+| ------------------- | ---- | -------------------------------- |
+| 4242 4242 4242 4242 | Visa | Pagamento aprovado (sucesso)     |
+| 4000 0000 0000 9995 | Visa | Cartão recusado (erro de cartão) |
+| 4000 0000 0000 0341 | Visa | Cartão com fundos insuficientes  |
+| 4000 0000 0000 3220 | Visa | Cartão com erro de processamento |
