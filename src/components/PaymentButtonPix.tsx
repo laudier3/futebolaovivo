@@ -26,7 +26,7 @@ export const PixPayment = () => {
     setPaid(false);
 
     try {
-      const response = await fetch('http://localhost:4242/create-pix-payment', {
+      const response = await fetch('https://app4.apinonshops.store/create-pix-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export const PixPayment = () => {
     
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`https://app4.apinonshops.store//payment-status?email=${encodeURIComponent(email)}`);
+        const res = await fetch(`https://app4.apinonshops.store/payment-status?email=${encodeURIComponent(email)}`);
         if (!res.ok) throw new Error("Resposta inválida do servidor");
 
         console.log(res)
