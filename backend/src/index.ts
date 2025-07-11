@@ -156,8 +156,8 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
       }],
       mode: 'payment',
       customer_email: email,
-      success_url: `https://app4.apinonshops.store/success?email=${email}`,
-      cancel_url: `https://app4.apinonshops.store/`,
+      success_url: `https://futebolaovivo-kohl.vercel.app/success?email=${email}`,
+      cancel_url: `https://futebolaovivo-kohl.vercel.app/`,
       metadata: {
         access_type: 'lifetime',
       }
