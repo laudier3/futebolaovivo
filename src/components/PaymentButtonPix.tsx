@@ -56,15 +56,19 @@ export const PixPayment = () => {
     if (!pixData || !email || paid) return;
 
     let retryCount = 0;
-    const maxRetries = 12; // tenta por 1 minuto (12 x 5s)
-    
+    const maxRetries = 12;
+
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`https://app4.apinonshops.store/payment-status?email=${encodeURIComponent(email)}`);
-        if (!res.ok) throw new Error("Resposta inválida do servidor");
 
-        console.log(res)
+        if (!res.ok) {
+          console.error("Erro HTTP:", res.status);
+          throw new Error("Resposta inválida do servidor");
+        }
+
         const data = await res.json();
+        console.log("Resposta da API:", data);
 
         if (data?.paid) {
           localStorage.setItem(`access_granted_${email}`, 'true');
@@ -82,18 +86,25 @@ export const PixPayment = () => {
           }
         }
       } catch (err) {
-        console.error('Erro ao verificar pagamento:', err);
+        let errorMessage = 'Erro ao verificar pagamento.';
+        
+        if (err instanceof Error) {
+          console.error('Erro ao verificar pagamento:', err.message);
+          errorMessage = err.message;
+        } else {
+          console.error('Erro desconhecido:', err);
+        }
+
         retryCount++;
         if (retryCount >= maxRetries) {
           clearInterval(interval);
-          setError("Erro ao verificar pagamento. Tente novamente.");
+          setError(`${errorMessage} Tente novamente.`);
         }
       }
     }, 5000);
 
     return () => clearInterval(interval);
   }, [pixData, email, paid]);
-
 
   const copyToClipboard = () => {
     if (pixData?.qr_code) {

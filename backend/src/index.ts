@@ -14,7 +14,9 @@ const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {
 // Configure seu access token do Mercado Pago aqui
 mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || 'SEU_ACCESS_TOKEN_AQUI');
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000' //https://futebolaovivo-kohl.vercel.app/
+}));
 app.use(express.json());
 
 const PAGAMENTOS_PENDENTES_FILE = 'pendentes.json';
