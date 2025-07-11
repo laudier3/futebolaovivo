@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export async function createCheckout(email: string) {
-  const response = await axios.post('http://localhost:4242/create-checkout-session', {
+  const response = await axios.post('https://app4.apinonshops.store/create-checkout-session', {
     email,
   });
   return response.data; // { checkoutUrl }
