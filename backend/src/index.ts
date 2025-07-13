@@ -7,38 +7,61 @@ import "dotenv/config"
 
 const app = express();
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {
-  //apiVersion: '2024-04-10',
-});
+const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
 
-// Configure seu access token do Mercado Pago aqui
-mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || 'SEU_ACCESS_TOKEN_AQUI');
+mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || '');
 
 app.use(cors({
-  origin: 'http://localhost:3000' //https://futebolaovivo-kohl.vercel.app/
+  origin: `http://localhost:3000`,
 }));
 app.use(express.json());
 
 const PAGAMENTOS_PENDENTES_FILE = 'pendentes.json';
+const DB_FILE = 'pagamentos.json';
 
-function registrarPagamentoPendente(id: string, email: string) {
-  let pendentes: { [id: string]: string } = {};
+// 🔒 Util: salvar e obter pendente
+function salvarPendente(paymentId: string, email: string) {
+  let pendentes: { [key: string]: string } = {};
   if (fs.existsSync(PAGAMENTOS_PENDENTES_FILE)) {
     pendentes = JSON.parse(fs.readFileSync(PAGAMENTOS_PENDENTES_FILE, 'utf-8'));
   }
-  pendentes[id] = email;
-  fs.writeFileSync(PAGAMENTOS_PENDENTES_FILE, JSON.stringify(pendentes, null, 2));
+  pendentes[paymentId] = email;
+  fs.writeFileSync(PAGAMENTOS_PENDENTES_FILE, JSON.stringify(pendentes));
 }
 
+function obterEmailPorPagamento(id: string): string | null {
+  if (!fs.existsSync(PAGAMENTOS_PENDENTES_FILE)) return null;
+  const pendentes = JSON.parse(fs.readFileSync(PAGAMENTOS_PENDENTES_FILE, 'utf-8'));
+  return pendentes[id] || null;
+}
+
+// 💾 Util: salvar e consultar pagamento aprovado
+function salvarPagamento(email: string) {
+  let db: { [key: string]: boolean } = {};
+  if (fs.existsSync(DB_FILE)) {
+    db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  }
+  db[email] = true;
+  fs.writeFileSync(DB_FILE, JSON.stringify(db));
+}
+
+function consultarPagamento(email: string): boolean {
+  if (!fs.existsSync(DB_FILE)) return false;
+  const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  return db[email] === true;
+}
+
+// 🚀 Criar pagamento Pix
 app.post('/create-pix-payment', async (req: any, res: any) => {
   try {
     const { email, amount } = req.body;
+
     if (!email || !amount) {
       return res.status(400).json({ error: 'email e amount são obrigatórios' });
     }
 
     const payment_data = {
-      transaction_amount: amount / 100, // R$ 0,01 se amount=1 centavo
+      transaction_amount: amount / 100,
       description: 'Pagamento via Pix - Futebol ao Vivo',
       payment_method_id: 'pix',
       payer: {
@@ -53,6 +76,9 @@ app.post('/create-pix-payment', async (req: any, res: any) => {
       return res.status(500).json({ error: 'Erro ao criar pagamento Pix' });
     }
 
+    const paymentId = payment.body.id.toString();
+    salvarPendente(paymentId, email); // ✅ salva para o webhook depois recuperar
+
     const pixData = {
       qr_code_base64: payment.body.point_of_interaction.transaction_data.qr_code_base64,
       qr_code: payment.body.point_of_interaction.transaction_data.qr_code,
@@ -65,59 +91,7 @@ app.post('/create-pix-payment', async (req: any, res: any) => {
   }
 });
 
-function obterEmailPorPagamento(id: string): string | null {
-  if (!fs.existsSync(PAGAMENTOS_PENDENTES_FILE)) return null;
-  const pendentes = JSON.parse(fs.readFileSync(PAGAMENTOS_PENDENTES_FILE, 'utf-8'));
-  return pendentes[id] || null;
-}
-
-app.post('/webhook', express.json(), async (req: any, res: any) => {
-  const paymentId = req.body?.data?.id;
-  if (!paymentId) return res.sendStatus(400);
-
-  const result = await mercadopago.payment.findById(paymentId);
-  const payment = result.body;
-  const status = payment.status;
-
-  // ✅ Aqui recupera o email real
-  const email = obterEmailPorPagamento(paymentId.toString());
-  console.log(`🔍 Pagamento ${paymentId}: status = ${status}, email real = ${email}`);
-
-  if (status === 'approved' && email) {
-    salvarPagamento(email);
-    console.log(`✅ Pagamento aprovado para o email real: ${email}`);
-  }
-
-  res.sendStatus(200);
-});
-
-const DB_FILE = 'pagamentos.json';
-
-function salvarPagamento(email: string) {
-  let db: { [key: string]: boolean } = {};
-
-  if (fs.existsSync(DB_FILE)) {
-    const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
-    db = JSON.parse(fileContent);
-  }
-  db[email] = true;
-  fs.writeFileSync(DB_FILE, JSON.stringify(db));
-}
-
-function consultarPagamento(email: string): boolean {
-  if (!fs.existsSync(DB_FILE)) return false;
-  const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-  return db[email] === true;
-}
-
-app.get('/payment-status', (req: any, res: any) => {
-  const email = req.query.email as string;
-  if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
-
-  const pago = consultarPagamento(email);
-  res.json({ paid: pago });
-});
-
+// ✅ Webhook (único!)
 app.post('/webhook', express.json(), async (req: any, res: any) => {
   const paymentId = req.body?.data?.id;
   if (!paymentId) return res.sendStatus(400);
@@ -126,11 +100,14 @@ app.post('/webhook', express.json(), async (req: any, res: any) => {
     const result = await mercadopago.payment.findById(paymentId);
     const payment = result.body;
     const status = payment.status;
-    const email = payment.payer?.email;
+
+    const email = obterEmailPorPagamento(paymentId.toString()); // ✅ agora funciona!
+
+    console.log(`🔍 Pagamento ${paymentId}: status = ${status}, email real = ${email}`);
 
     if (status === 'approved' && email) {
-      salvarPagamento(email);  // 👈 AQUI usa a função!
-      console.log(`✅ Pagamento aprovado para: ${email}`);
+      salvarPagamento(email);
+      console.log(`✅ Pagamento aprovado para o email: ${email}`);
     }
 
     res.sendStatus(200);
@@ -140,6 +117,16 @@ app.post('/webhook', express.json(), async (req: any, res: any) => {
   }
 });
 
+// 📦 Consulta de status de pagamento
+app.get('/payment-status', (req: any, res: any) => {
+  const email = req.query.email as string;
+  if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
+
+  const pago = consultarPagamento(email);
+  res.json({ paid: pago });
+});
+
+// ✅ Checkout com cartão (Stripe)
 app.post('/create-checkout-session', async (req: any, res: any) => {
   const { email } = req.body;
 
@@ -151,15 +138,16 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
           currency: 'brl',
           product_data: {
             name: 'Acesso vitalício ao Futebol ao Vivo',
+            images: ['https://http2.mlstatic.com/D_NQ_NP_2X_897079-MLU77244846123_062024-F.webp'],
           },
-          unit_amount: 2000, // R$20,00 em centavos
+          unit_amount: 2000,
         },
         quantity: 1,
       }],
       mode: 'payment',
       customer_email: email,
-      success_url: `https://futebolaovivo-kohl.vercel.app/success?email=${email}`,
-      cancel_url: `https://futebolaovivo-kohl.vercel.app/`,
+      success_url: `https://a81a0e2923b9.ngrok-free.app/success?email=${email}`,
+      cancel_url: `https://a81a0e2923b9.ngrok-free.app/`,
       metadata: {
         access_type: 'lifetime',
       }
@@ -172,6 +160,7 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
   }
 });
 
+// 🎯 Pagamento com Pix pelo Stripe (alternativo)
 app.post('/create-payment-intent', async (req: any, res: any) => {
   try {
     const { email } = req.body;
@@ -183,7 +172,7 @@ app.post('/create-payment-intent', async (req: any, res: any) => {
     const customer = await stripe.customers.create({ email });
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 2000, // R$20,00 fixo
+      amount: 2000,
       currency: 'brl',
       customer: customer.id,
       receipt_email: email,
@@ -204,7 +193,7 @@ app.post('/create-payment-intent', async (req: any, res: any) => {
   }
 });
 
-
+// 🚀 Inicia servidor
 app.listen(4242, () => {
   console.log('🚀 Backend rodando em http://localhost:4242');
 });

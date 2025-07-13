@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { api } from 'src/services/tripeAPI';
 
 interface PixData {
   qr_code_base64: string;
@@ -11,6 +12,7 @@ export const PixPayment = () => {
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   const startPixPayment = async () => {
     if (!email.trim()) {
@@ -22,53 +24,65 @@ export const PixPayment = () => {
     setError(null);
     setPixData(null);
     setCopied(false);
+    setPaid(false);
 
     try {
-      const response = await fetch('http://localhost:4242/create-pix-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          amount: 1, // R$ 20,00 em centavos
-        }),
+      const response = await api.post('/create-pix-payment', {
+        email,
+        amount: 1, // 👈 Aqui ajusta para R$20
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao iniciar pagamento');
-      }
-
-      const data: PixData = await response.json();
+      const data: PixData = response.data;
       setPixData(data);
     } catch (err: any) {
-      setError(err.message);
+      console.error(err);
+      setError(err.response?.data?.error || 'Erro ao iniciar pagamento');
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Faz polling para verificar o status do pagamento Pix
+  // Verifica se o pagamento foi feito a cada 5 segundos
   useEffect(() => {
-    if (pixData && email) {
-      const interval = setInterval(async () => {
-        try {
-          const res = await fetch(`http://localhost:4242/payment-status?email=${encodeURIComponent(email)}`);
-          const { paid } = await res.json();
+    if (!pixData || !email || paid) return;
 
-          if (paid) {
-            localStorage.setItem(`access_granted_${email}`, 'true');
+    let retryCount = 0;
+    const maxRetries = 18; // ~90 segundos
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get(`/payment-status?email=${encodeURIComponent(email)}`);
+        const data = res.data;
+
+        console.log("📡 Resposta da API:", data);
+
+        if (data?.paid) {
+          localStorage.setItem(`access_granted_${email}`, 'true');
+          setPaid(true);
+          clearInterval(interval);
+
+          setTimeout(() => {
             window.location.href = 'https://apk.futemais.net/app2/';
+          }, 2000);
+        } else {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            clearInterval(interval);
+            setError("Tempo de espera esgotado. Tente novamente.");
           }
-        } catch (err) {
-          console.error('Erro ao verificar pagamento:', err);
         }
-      }, 5000); // a cada 5 segundos
+      } catch (err: any) {
+        console.error('Erro ao verificar pagamento:', err.message);
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          clearInterval(interval);
+          setError("Erro ao verificar pagamento. Tente novamente.");
+        }
+      }
+    }, 5000);
 
-      return () => clearInterval(interval);
-    }
-  }, [pixData, email]);
+    return () => clearInterval(interval);
+  }, [pixData, email, paid]);
 
   const copyToClipboard = () => {
     if (pixData?.qr_code) {
@@ -80,17 +94,21 @@ export const PixPayment = () => {
   };
 
   return (
-    <div>
-      <input
-        type="email"
-        placeholder="Seu e-mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <button onClick={startPixPayment} disabled={loading || !email.trim()}>
-        {loading ? 'Gerando QR Code...' : 'Pagar com Pix'}
-      </button>
+    <div className='payment'>
+      {!pixData && (
+        <>
+          <input
+            type="email"
+            placeholder="Seu e-mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <button onClick={startPixPayment} disabled={loading || !email.trim()}>
+            {loading ? 'Gerando QR Code...' : 'Pagar R$20 com Pix'}
+          </button>
+        </>
+      )}
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
@@ -114,9 +132,16 @@ export const PixPayment = () => {
               {copied ? 'Copiado!' : 'Copiar'}
             </button>
           </div>
-          <p style={{ color: 'green', marginTop: '1rem' }}>
-            Aguardando confirmação do pagamento...
-          </p>
+
+          {paid ? (
+            <p style={{ color: 'green', marginTop: '1rem' }}>
+              ✅ Pagamento aprovado! Redirecionando...
+            </p>
+          ) : (
+            <p style={{ color: 'blue', marginTop: '1rem' }}>
+              Aguardando confirmação do pagamento...
+            </p>
+          )}
         </div>
       )}
     </div>
