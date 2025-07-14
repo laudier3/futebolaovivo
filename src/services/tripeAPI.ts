@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://app4.apinonshops.store/',
+  baseURL: 'https://app4.apinonshops.store',
   headers: {
     'Content-Type': 'application/json',
   },

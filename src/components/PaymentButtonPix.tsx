@@ -70,7 +70,7 @@ export const PixPayment = () => {
           retryCount++;
           if (retryCount >= maxRetries) {
             clearInterval(interval);
-            setError("Tempo de espera esgotado. Tente novamente.");
+            //setError("Tempo de espera esgotado. Tente novamente.");
           }
         }
       } catch (err: any) {
