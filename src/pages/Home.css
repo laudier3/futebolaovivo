@@ -48,12 +48,12 @@
 @media (max-width: 736px) {
 
   .championship-icon {
-    width: 40px;
-    height: 8vh;
+    width: 30px;
+    height: 6vh;
     text-align: center;
     color: #ddd;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .championship-icon img {
