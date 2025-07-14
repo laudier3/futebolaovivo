@@ -37,9 +37,9 @@ p {
 
 @media (max-width: 736px) {
   p {
-    color: white;
+    color: rgb(13, 1, 1);
     font-weight: bold;
-    margin-top: -35px;
+    margin-top: -25px;
   }
 
   h1 {
