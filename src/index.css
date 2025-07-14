@@ -17,10 +17,20 @@ input {
 
 .payment-button {
   padding: 10px 20px;
+  font-size: 18px;
   margin-top: 1rem;
   background-color: #0f62fe;
-  color: #000000;
+  color: #ffff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.payment-button:hover {
+  background-color: #07f326;
+  color: black;
+}
+
+p {
+  font-size: 20px;
 }

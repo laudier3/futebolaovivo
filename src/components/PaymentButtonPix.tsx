@@ -139,7 +139,7 @@ export const PixPayment = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <button onClick={startPixPayment} disabled={loading || !email.trim()}>
+          <button className='payment-button' onClick={startPixPayment} disabled={loading || !email.trim()}>
             {loading ? 'Gerando QR Code...' : 'Pagar R$20 com Pix'}
           </button>
         </>

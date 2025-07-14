@@ -38,7 +38,6 @@ const Home: React.FC = () => {
     <>
       <div className="home-hero">
         <h1>⚽ Assista aos jogos dos maiores campeonatos do mundo</h1>
-        <p>Apenas um pagamento e você terá <strong>acesso vitalício</strong> ao conteúdo premium de futebol ao vivo.</p>
       </div>
 
       <div className="championships-grid">
@@ -49,7 +48,7 @@ const Home: React.FC = () => {
           </div>
         ))}
       </div>
-
+      <p>Apenas um pagamento e você terá <strong>acesso vitalício</strong> ao conteúdo premium de futebol ao vivo.</p>
       <div className="payment-section">
         <h2>💳 Pague com Cartão de Crédito</h2>
         <input

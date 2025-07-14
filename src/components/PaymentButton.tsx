@@ -22,7 +22,7 @@ const PaymentButton = ({ email }: PaymentButtonProps) => {
   };
 
   return (
-    <button onClick={handlePayment} disabled={loading}>
+    <button className='payment-button' onClick={handlePayment} disabled={loading}>
       {loading ? 'Redirecionando...' : 'Pagar R$20 com cartão'}
     </button>
   );
