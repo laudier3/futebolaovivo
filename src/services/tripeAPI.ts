@@ -9,7 +9,7 @@ const api = axios.create({
 
 
 export async function createCheckout(email: string) {
-  const response = await axios.post(`app4.apinonshops.store/create-checkout-session`, {
+  const response = await axios.post(`https://app4.apinonshops.store/create-checkout-session`, {
     email,
   });
   console.log('E-mail enviado para pagamento:', email);

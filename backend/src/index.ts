@@ -7,7 +7,8 @@ import "dotenv/config"
 
 const app = express();
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
+//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
+const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION}`, {});
 
 mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || '');
 
