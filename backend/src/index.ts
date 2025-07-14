@@ -7,8 +7,8 @@ import "dotenv/config"
 
 const app = express();
 
-//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
-const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
+const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
+//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
 
 mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || '');
 
@@ -148,7 +148,7 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
       mode: 'payment',
       customer_email: email,
       success_url: `https://a81a0e2923b9.ngrok-free.app/success?email=${email}`,
-      cancel_url: `https://a81a0e2923b9.ngrok-free.app/`,
+      cancel_url: `https://futebolaovivooficial.vercel.app/`,
       metadata: {
         access_type: 'lifetime',
       }
