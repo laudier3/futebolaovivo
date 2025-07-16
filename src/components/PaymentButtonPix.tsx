@@ -30,7 +30,7 @@ export const PixPayment = () => {
     try {
       const response = await api.post('/create-pix-payment', {
         email,
-        amount: 1, // 👈 Aqui ajusta para R$20
+        amount: 2000, // 👈 Aqui ajusta para R$20
       });
 
       const data: PixData = response.data;

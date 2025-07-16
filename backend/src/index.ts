@@ -8,8 +8,8 @@ import "dotenv/config"
 
 const app = express();
 
-//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY!}`, {});
-const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
+const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY!}`, {});
+//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
 
 mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || '');
 
@@ -44,8 +44,56 @@ async function enviarEmailConfirmacao(email: string) {
         <p style="font-size: 14px; color: gray;">Este é um e-mail automático. Não responda.</p>
         <img src="https://thumbs.dreamstime.com/b/jogador-de-futebol-na-a%C3%A7%C3%A3o-51237258.jpg" alt="img"/>
         <h2>Acesso liberado abaixo</h2>
-        <p>Lebre-se de baixa o app para você er mais praticidade para assistir os jogos.</p>
+        <p>Lembre-se de baixa o app para você ter mais praticidade para assistir ao jogos.</p>
         <a href="https://apk.futemais.net/app2/" style="padding: 10px 20px; font-size: 18px; margin-top: 1rem; background-color: #0f62fe; color: #ffff; border: none; border-radius: 5px; cursor: pointer;">Assistir Jogos Agora</a>
+      </div>
+    `,
+  });
+
+  console.log(`📧 Email de confirmação enviado para ${email}:`, info.messageId);
+}
+
+// Função para enviar e-mail
+async function enviarEmailConfirmacaoProdutionPix(email: string) {
+  console.log(`📨 Enviando email de confirmação para ${email}...`);
+
+  const info = await transporter.sendMail({
+    from: `"Futebol ao Vivo" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '✅ Pagamento confirmado com sucesso!',
+    html: `
+      <div style="font-family: Arial, sans-serif; font-size: 16px;">
+        <p style="color: white">Olá administrador! 👋</p>
+        <p style="color: white">Mais um pagamento no PIX foi <strong>confirmado com sucesso ✅</strong>.</p>
+        <p>Faturamente de 20,00 do <strong>Futebol ao Vivo</strong>! ⚽️</p>
+        <hr />
+        <p style="font-size: 14px; color: gray;">Este é um e-mail automático. Não responda.</p>
+        <img src="https://www.silbeck.com.br/wp-content/uploads/2021/06/Prancheta-2@300x-100-scaled.jpg" alt="img" style="display: flex; align-items: center; align-content: center;"/>
+        
+      </div>
+    `,
+  });
+
+  console.log(`📧 Email de confirmação enviado para ${email}:`, info.messageId);
+}
+
+// Função para enviar e-mail
+async function enviarEmailConfirmacaoProdutionCartoa(email: string) {
+  console.log(`📨 Enviando email de confirmação para ${email}...`);
+
+  const info = await transporter.sendMail({
+    from: `"Futebol ao Vivo" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '✅ Pagamento confirmado com sucesso!',
+    html: `
+      <div style="font-family: Arial, sans-serif; font-size: 16px;">
+        <p style="color: white">Olá administrador! 👋</p>
+        <p style="color: white">Mais um pagamento no CARÃO foi <strong>confirmado com sucesso ✅</strong>.</p>
+        <p>Faturamente de 20,00 do <strong>Futebol ao Vivo</strong>! ⚽️</p>
+        <hr />
+        <p style="font-size: 14px; color: gray;">Este é um e-mail automático. Não responda.</p>
+        <img src="https://www.silbeck.com.br/wp-content/uploads/2021/06/Prancheta-2@300x-100-scaled.jpg" alt="img" style="display: flex; align-items: center; align-content: center;"/>
+        
       </div>
     `,
   });
@@ -82,6 +130,10 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       salvarPagamento(email);
       await enviarEmailConfirmacao(email);
       console.log(`✅ Pagamento confirmado via Stripe para: ${email}`);
+      (async () => {
+        await enviarEmailConfirmacao(email);
+        await enviarEmailConfirmacaoProdutionCartoa("laudiersantanamei@gmail.com");
+      })()
     } else {
       console.warn('⚠️ Sessão confirmada mas email está ausente:', session);
     }
@@ -190,6 +242,7 @@ app.post('/webhook', express.json(), async (req: any, res: any) => {
       console.log(`✅ Pagamento aprovado para o email: ${email}`);
       (async () => {
         await enviarEmailConfirmacao(email);
+        await enviarEmailConfirmacaoProdutionPix("laudiersantanamei@gmail.com");
       })()
     }
 
@@ -206,6 +259,7 @@ app.get('/payment-status', (req: any, res: any) => {
   if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
 
   const pago = consultarPagamento(email);
+  //console.log(pago, "teste")
   res.json({ paid: pago });
 });
 
@@ -235,11 +289,6 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
         access_type: 'lifetime',
       }
     });
-
-    (async () => {
-      await enviarEmailConfirmacao(email);
-    })()
-
     res.json({ checkoutUrl: session.url });
   } catch (err) {
     console.error('Erro ao criar sessão:', err);
