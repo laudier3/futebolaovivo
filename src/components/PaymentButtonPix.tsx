@@ -78,7 +78,7 @@ export const PixPayment = () => {
         retryCount++;
         if (retryCount >= maxRetries) {
           clearInterval(interval);
-          setError("Erro ao verificar pagamento. Tente novamente.");
+          //setError("Erro ao verificar pagamento. Tente novamente.");
         }
       }
     }, 5000);
