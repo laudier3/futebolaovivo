@@ -23,11 +23,15 @@
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "mercadopago": "^1.5.17",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "stripe": "^18.3.0"
   },
   "devDependencies": {
     "@types/mercadopago": "^1.5.11",
+    "@types/micro": "^7.3.7",
+    "@types/nodemailer": "^6.4.17",
+    "micro": "^10.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

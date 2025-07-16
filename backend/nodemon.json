@@ -1,0 +1,9 @@
+{
+  "watch": ["src"],
+  "ignore": [
+    "pagamentos.json",
+    "pendentes.json",
+    "*.log"
+  ],
+  "ext": "ts,json"
+}

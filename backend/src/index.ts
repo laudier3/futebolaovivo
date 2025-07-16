@@ -3,17 +3,96 @@ import Stripe from 'stripe';
 import cors from 'cors';
 import mercadopago from 'mercadopago';
 import fs from 'fs';
+import nodemailer from 'nodemailer';
 import "dotenv/config"
 
 const app = express();
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY}`, {});
-//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
+//const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY!}`, {});
+const stripe = new Stripe(`${process.env.STRIPE_SECRETE_KEY_PRODUCTION!}`, {});
 
 mercadopago.configurations.setAccessToken(process.env.MERCADOPAGO_ACCESS_TOKEN || '');
 
+// Configuração do Nodemailer (exemplo com Gmail)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_FROM,       // ou process.env.EMAIL_USER (use o que estiver configurado)
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+/*(async () => {
+  await enviarEmailConfirmacao('kalinoippc@gmail.com');
+})();*/
+
+
+// Função para enviar e-mail
+async function enviarEmailConfirmacao(email: string) {
+  console.log(`📨 Enviando email de confirmação para ${email}...`);
+
+  const info = await transporter.sendMail({
+    from: `"Futebol ao Vivo" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '✅ Pagamento confirmado com sucesso!',
+    html: `
+      <div style="font-family: Arial, sans-serif; font-size: 16px;">
+        <p style="color: white">Olá! 👋</p>
+        <p style="color: white">Seu pagamento foi <strong>confirmado com sucesso</strong>.</p>
+        <p>Obrigado por apoiar o <strong>Futebol ao Vivo</strong>! ⚽️</p>
+        <hr />
+        <p style="font-size: 14px; color: gray;">Este é um e-mail automático. Não responda.</p>
+        <img src="https://thumbs.dreamstime.com/b/jogador-de-futebol-na-a%C3%A7%C3%A3o-51237258.jpg" alt="img"/>
+        <h2>Acesso liberado abaixo</h2>
+        <p>Lebre-se de baixa o app para você er mais praticidade para assistir os jogos.</p>
+        <a href="https://apk.futemais.net/app2/" style="padding: 10px 20px; font-size: 18px; margin-top: 1rem; background-color: #0f62fe; color: #ffff; border: none; border-radius: 5px; cursor: pointer;">Assistir Jogos Agora</a>
+      </div>
+    `,
+  });
+
+  console.log(`📧 Email de confirmação enviado para ${email}:`, info.messageId);
+}
+
+// ✅ Webhook do Stripe para confirmação de pagamento
+app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req: any, res: any) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body, // raw body
+      sig!,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err) {
+    const error = err as Error;
+    console.error('❌ Erro ao verificar assinatura do Stripe:', error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+
+  console.log('📦 Evento Stripe recebido:', event.type);
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const email = session.customer_email || session.customer_details?.email;
+
+    console.log('📧 Email extraído da sessão:', email);
+
+    if (email) {
+      salvarPagamento(email);
+      await enviarEmailConfirmacao(email);
+      console.log(`✅ Pagamento confirmado via Stripe para: ${email}`);
+    } else {
+      console.warn('⚠️ Sessão confirmada mas email está ausente:', session);
+    }
+  }
+
+  res.status(200).send('OK');
+});
+
 app.use(cors({
   origin: `http://localhost:3000`,
+  //origin: `https://futebolaovivooficial.vercel.app/`,
 }));
 app.use(express.json());
 
@@ -109,6 +188,9 @@ app.post('/webhook', express.json(), async (req: any, res: any) => {
     if (status === 'approved' && email) {
       salvarPagamento(email);
       console.log(`✅ Pagamento aprovado para o email: ${email}`);
+      (async () => {
+        await enviarEmailConfirmacao(email);
+      })()
     }
 
     res.sendStatus(200);
@@ -146,13 +228,17 @@ app.post('/create-checkout-session', async (req: any, res: any) => {
         quantity: 1,
       }],
       mode: 'payment',
-      customer_email: email,
-      success_url: `https://a81a0e2923b9.ngrok-free.app/success?email=${email}`,
+      customer_email: email, //Esse é o email laudiersantanamei@gmail.com
+      success_url: `https://futebolaovivooficial.vercel.app/success?email=${email}`,
       cancel_url: `https://futebolaovivooficial.vercel.app/`,
       metadata: {
         access_type: 'lifetime',
       }
     });
+
+    (async () => {
+      await enviarEmailConfirmacao(email);
+    })()
 
     res.json({ checkoutUrl: session.url });
   } catch (err) {
