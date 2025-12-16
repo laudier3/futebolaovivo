@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:4242', //'https://futebol.urlcurt.site',
+  baseURL: 'https://futebol.urlcurt.site',
   headers: {
     'Content-Type': 'application/json',
   },
