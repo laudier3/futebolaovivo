@@ -93,7 +93,16 @@ async function enviarEmailConfirmacaoProdutionCartoa(email: string) {
 }
 
 /* ===================== MIDDLEWARES ===================== */
-app.use(cors({ origin: 'http://localhost:4000' }));
+app.use(cors({
+  origin: [
+    'http://localhost:4000',
+    'https://futebolaovivooficial.vercel.app',
+    'https://www.futebolaovivooficial.vercel.app',
+  ],
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 /* ===================== FILE DB ===================== */
@@ -129,7 +138,7 @@ function consultarPagamento(email: string): boolean {
 }
 
 /* ===================== PIX - MERCADO PAGO ===================== */
-app.post('/create-pix-payment', async (req, res) => {
+app.post('/create-pix-payment', async (req: any, res: any) => {
 
   try {
     const { email, amount } = req.body;
