@@ -1,48 +1,87 @@
-# Getting Started with Create React App
+# ⚽ Futebol Ao Vivo — Landing Page de Streaming Esportivo
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Uma **landing page moderna, rápida e responsiva** desenvolvida para a **venda e divulgação de serviços de streaming de jogos de futebol ao vivo**.  
+O projeto possui **frontend em React** e **backend em Node.js + Express**, integrados para gerenciamento de pagamentos, cartões e controle de solicitações.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📸 Preview
 
-### `npm start`
+<img src="https://user-images.githubusercontent.com/674621/191327859-b1c95d59-609b-447e-82c1-60e8fdb79a40.png" alt="Preview da Landing Page Futebol Ao Vivo" width="100%" />
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+> *Imagem ilustrativa. Substitua por screenshots reais do projeto.*
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 🔗 Demo / Acesso ao Projeto
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+👉 **Acesse a landing page online:**  
+🌐 https://futebolaovivooficial.vercel.app/
 
-### `npm run build`
+> O link permite visualizar o layout, a navegação e a proposta da página em tempo real.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## ✨ Funcionalidades
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- ⚽ **Landing Page para Streaming de Futebol**  
+  Divulgação de serviços, planos e benefícios.
 
-### `npm run eject`
+- 🎯 **Foco em Conversão**  
+  Estrutura pensada para capturar leads e direcionar o usuário para a contratação.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- 💳 **Gerenciamento de Pagamentos**  
+  Controle de pagamentos, cartões e solicitações pendentes via backend.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- 🔐 **Backend Integrado**  
+  API em Node.js + Express para comunicação com o frontend.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- 📱 **Design Responsivo**  
+  Compatível com mobile, tablet e desktop.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- 🚀 **Alta Performance**  
+  Frontend rápido utilizando Vite + React.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🛠️ Tecnologias Utilizadas
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-# futebol-aovivo
-# futebolaovivo
+### Frontend
+- ⚛️ [React.js](https://reactjs.org/)
+- ⚡ [Vite](https://vitejs.dev/)
+- 🟦 TypeScript
+- 💨 CSS moderno / responsivo
+
+### Backend
+- 🟢 [Node.js](https://nodejs.org/)
+- 🚂 [Express.js](https://expressjs.com/)
+- 🔄 Nodemon
+- 📁 Persistência em arquivos `.json`
+
+---
+
+## 📁 Estrutura do Projeto
+
+```bash
+futebolaovivo/
+├── backend/
+│   ├── src/                # Código fonte do backend
+│   ├── node_modules/
+│   ├── pagamentos.json     # Registros de pagamentos
+│   ├── pendentes.json      # Solicitações pendentes
+│   ├── nodemon.json
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
+│
+├── src/                    # Código fonte do frontend (React)
+├── public/                 # Arquivos públicos
+├── img/                    # Imagens do projeto
+├── cartoes/                # Dados relacionados a cartões
+├── node_modules/
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── vite-env.d.ts
+├── passwords.txt           # (uso local / NÃO recomendado versionar)
+└── README.md

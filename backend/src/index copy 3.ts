@@ -20,7 +20,6 @@ const mpClient = new MercadoPagoConfig({
 
 const paymentClient = new Payment(mpClient);
 
-
 /* ===================== NODEMAILER ===================== */
 const transporter = nodemailer.createTransport({
   service: 'gmail',
