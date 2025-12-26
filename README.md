@@ -7,7 +7,7 @@ O projeto possui **frontend em React** e **backend em Node.js + Express**, integ
 
 ## 📸 Preview
 
-<img src="https://user-images.githubusercontent.com/674621/191327859-b1c95d59-609b-447e-82c1-60e8fdb79a40.png" alt="Preview da Landing Page Futebol Ao Vivo" width="100%" />
+<img src="https://github.com/laudier3/futebolaovivo/blob/main/public/futebol.png" alt="Preview da Landing Page Futebol Ao Vivo" width="100%" />
 
 > *Imagem ilustrativa. Substitua por screenshots reais do projeto.*
 
