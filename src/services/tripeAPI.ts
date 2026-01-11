@@ -9,7 +9,7 @@ const api = axios.create({
 
 
 export async function createCheckout(email: string) {
-  const response = await axios.post(`https://futebol.urlcurt.site/create-checkout-session`, {
+  const response = await axios.post(`https://fut.urlcurt.site/create-checkout-session`, {
     email,
   });
   console.log('E-mail enviado para pagamento:', email);
