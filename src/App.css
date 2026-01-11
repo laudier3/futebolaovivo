@@ -1,16 +1,75 @@
-/* App.css */
-body, html, #root {
-  height: 100%;
+* {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.app-container {
-  background-image: url('https://http2.mlstatic.com/D_NQ_NP_2X_897079-MLU77244846123_062024-F.webp');
-  background-size: cover;
-  background-position: center;
+.app {
   min-height: 100vh;
+}
+
+.overlay {
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.overlay h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.overlay p {
+  margin-bottom: 30px;
+  color: #ccc;
+}
+
+.payments {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.payment-card {
+  background: #ffffff;
+  color: #000;
   padding: 20px;
-  color: #000000;
+  border-radius: 10px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.payment-logo {
+  height: 40px;
+  object-fit: contain;
+}
+
+.payment-card input {
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.payment-card button {
+  padding: 12px;
+  background: #f5b800;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.payment-card button:hover {
+  background: #d89f00;
 }
